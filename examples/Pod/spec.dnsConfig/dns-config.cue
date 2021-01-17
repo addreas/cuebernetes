@@ -1,0 +1,26 @@
+package kube
+
+k: Pod: "dns-config-dns-config-pod": {
+	spec: {
+		containers: [{
+			name:  "test"
+			image: "nginx"
+		}]
+		dnsPolicy: "None"
+		dnsConfig: {
+			nameservers: [
+				"1.2.3.4",
+			]
+			searches: [
+				"ns1.svc.cluster-domain.example",
+				"my.dns.search.suffix",
+			]
+			options: [{
+				name:  "ndots"
+				value: "2"
+			}, {
+				name: "edns0"
+			}]
+		}
+	}
+}

@@ -1,0 +1,16 @@
+package kube
+
+k: Pod: "init-container-pod": {
+	spec: {
+		containers: [{
+			name:  "init-container-container"
+			image: "busybox"
+			command: ["sh", "-c", "echo The app is running! && sleep 3600"]
+		}]
+		initContainers: [{
+			name:  "init-container-init-container"
+			image: "busybox"
+			command: ["sh", "-c", "until nslookup pods-init-container-service.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for myservice; sleep 2; done"]
+		}]
+	}
+}

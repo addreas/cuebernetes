@@ -1,0 +1,24 @@
+package kube
+
+k: Pod: "resource-request-pod": {
+	spec: containers: [{
+		name:  "resource-request-container"
+		image: "busybox"
+		args: [
+			"sleep",
+			"600",
+		]
+		livenessProbe: {
+			exec: command: [
+				"cat",
+				"/tmp/healthy",
+			]
+			initialDelaySeconds: 5
+			periodSeconds:       5
+		}
+		resources: requests: {
+			memory: "20000Mi"
+			cpu:    "99999m"
+		}
+	}]
+}
