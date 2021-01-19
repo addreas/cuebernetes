@@ -7,11 +7,3 @@ While this representative of what a repo setup like this could _perform_ like wi
 
 ## Scale
 Counting resources using `cue export -e k ./... | jq -r '.[][].metadata.name' | wc -l` gets 198 for this repo which `cue vet`s in 7.8s on the same machine that `cue vet`s a "real" 548 resource repo in 23.8s. Duplicating the resources, perhaps unsurprisingly, gets twice the run time in both cases. The larger contains a bunch of CRDs in `kube_defs.cue` making it closer to 200 lines, but this seems to have a relatively insignificant impact.
-
-## Issues
-Adding this constraint that defaults the namespace for all resources makes running any tool (`cue cmd`) practically impossible because of extremely high cpu/memory usage.
-```cue
-k: [string]: [string]: metadata: namespace: *"cuebernetes" | string
-```
-
-Running `cue trim` fails on the `Namespace` resources. Namespaces only exist in the `Namespace` and `PodSecurityPolicy` examples, so these are not trimed for now.
