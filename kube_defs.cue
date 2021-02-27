@@ -11,6 +11,21 @@ import (
 	policy_v1beta1 "k8s.io/api/policy/v1beta1"
 	rbac_v1 "k8s.io/api/rbac/v1"
 	storage_v1 "k8s.io/api/storage/v1"
+	apiextensions_v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+
+	source_controller_v1beta1 "github.com/fluxcd/source-controller/api/v1beta1"
+	kustomize_controller_v1beta1 "github.com/fluxcd/kustomize-controller/api/v1beta1"
+	helm_controller_v2beta1 "github.com/fluxcd/helm-controller/api/v2beta1"
+
+	sealed_secrets_v1alpha1 "github.com/bitnami-labs/sealed-secrets/pkg/apis/sealed-secrets/v1alpha1"
+
+	certmanager_v1 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1"
+
+	networkattachment_v1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
+
+	monitoring_v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+
+	cilium_v2 "github.com/cilium/cilium/pkg/k8s/apis/cilium.io/v2"
 )
 
 k: close({
@@ -19,7 +34,7 @@ k: close({
 			"\(Kind)": [Name=string]: Type & {
 				apiVersion: ApiVersion
 				kind:       Kind
-				metadata: metav1.#ObjectMeta & {
+				metadata:   metav1.#ObjectMeta & {
 					name: Name
 				}
 			}
@@ -74,4 +89,31 @@ _kubernetesAPIs: {
 	}
 
 	"storage.k8s.io/v1": StorageClass: storage_v1.#StorageClass
+
+	"apiextensions.k8s.io/v1": CustomResourceDefinition: apiextensions_v1.#CustomResourceDefinition
+
+	"source.toolkit.fluxcd.io/v1beta1": {
+		GitRepository:  source_controller_v1beta1.#GitRepository
+		HelmRepository: source_controller_v1beta1.#HelmRepository
+	}
+	"kustomize.toolkit.fluxcd.io/v1beta1": Kustomization: kustomize_controller_v1beta1.#Kustomization
+	"helm.toolkit.fluxcd.io/v2beta1": HelmRelease:        helm_controller_v2beta1.#HelmRelease
+
+	"bitnami.com/v1alpha1": SealedSecret: sealed_secrets_v1alpha1.#SealedSecret
+
+	"cert-manager.io/v1": {
+		Certificate:   certmanager_v1.#Certificate
+		ClusterIssuer: certmanager_v1.#ClusterIssuer
+		Issuer:        certmanager_v1.#Issuer
+	}
+
+	"k8s.cni.cncf.io/v1": NetworkAttachmentDefinition: networkattachment_v1.#NetworkAttachmentDefinition
+
+	"monitoring.coreos.com/v1": {
+		PodMonitor:     monitoring_v1.#PodMonitor
+		ServiceMonitor: monitoring_v1.#ServiceMonitor
+		PrometheusRule: monitoring_v1.#PrometheusRule
+	}
+
+	"cilium.io/v2": CiliumNetworkPolicy: cilium_v2.#CiliumNetworkPolicy
 }
