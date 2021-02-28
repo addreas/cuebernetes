@@ -1,27 +1,18 @@
 package kube
 
 k: ServiceMonitor: "longhorn-prometheus-servicemonitor": {
-	metadata: {
-		namespace: "longhorn-system"
-		labels: name: "longhorn-prometheus-servicemonitor"
-	}
-	spec: {
-		selector: matchLabels: app: "longhorn-manager"
-		namespaceSelector: matchNames: [
-			"longhorn-system",
-		]
-		endpoints: [{
-			port: "manager"
-		}]
-	}
+	_selector: "app": "longhorn-manager"
+	spec: endpoints: [{
+		port: "manager"
+	}]
 }
+
 k: PrometheusRule: "prometheus-longhorn-rules": {
 	metadata: {
 		labels: {
 			prometheus: "longhorn"
 			role:       "alert-rules"
 		}
-		namespace: "longhorn-system"
 	}
 	spec: groups: [{
 		name: "longhorn.rules"
@@ -144,10 +135,8 @@ k: PrometheusRule: "prometheus-longhorn-rules": {
 		}]
 	}]
 }
+
 k: RoleBinding: "prometheus-k8s": {
-	metadata: {
-		namespace: "longhorn-system"
-	}
 	roleRef: {
 		apiGroup: "rbac.authorization.k8s.io"
 		kind:     "Role"
@@ -159,35 +148,31 @@ k: RoleBinding: "prometheus-k8s": {
 		namespace: "monitoring"
 	}]
 }
-k: Role: "prometheus-k8s": {
-	metadata: {
-		namespace: "longhorn-system"
-	}
-	rules: [{
-		apiGroups: [
-			"",
-		]
-		resources: [
-			"services",
-			"endpoints",
-			"pods",
-		]
-		verbs: [
-			"get",
-			"list",
-			"watch",
-		]
-	}, {
-		apiGroups: [
-			"extensions",
-		]
-		resources: [
-			"ingresses",
-		]
-		verbs: [
-			"get",
-			"list",
-			"watch",
-		]
-	}]
-}
+
+k: Role: "prometheus-k8s": rules: [{
+	apiGroups: [
+		"",
+	]
+	resources: [
+		"services",
+		"endpoints",
+		"pods",
+	]
+	verbs: [
+		"get",
+		"list",
+		"watch",
+	]
+}, {
+	apiGroups: [
+		"extensions",
+	]
+	resources: [
+		"ingresses",
+	]
+	verbs: [
+		"get",
+		"list",
+		"watch",
+	]
+}]

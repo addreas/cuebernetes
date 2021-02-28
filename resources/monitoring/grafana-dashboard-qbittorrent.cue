@@ -3,10 +3,7 @@ package kube
 import json656e63 "encoding/json"
 
 k: ConfigMap: "grafana-dashboard-qbittorrent": {
-	metadata: {
-		labels: grafana_dashboard: "grrr"
-		namespace: "monitoring"
-	}
+	metadata: labels: grafana_dashboard: "grrr"
 	data: {
 		"qbittorrent.json": json656e63.Marshal(_cue_qbittorrent_json)
 		let _cue_qbittorrent_json = {

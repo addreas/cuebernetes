@@ -1,13 +1,10 @@
 package kube
 
 k: StatefulSet: sonarr: {
+	_selector: "app": "sonarr"
 	spec: {
-		selector: matchLabels: app: "sonarr"
 		template: {
-			metadata: labels: {
-				app:          "sonarr"
-				"vpn-egress": "client"
-			}
+			metadata: labels: "vpn-egress": "client"
 			spec: {
 				securityContext: fsGroup: 1000
 				containers: [{
@@ -54,10 +51,7 @@ k: StatefulSet: sonarr: {
 					name:            "exportarr"
 					image:           "onedr0p/exportarr:master"
 					imagePullPolicy: "IfNotPresent"
-					command: [
-						"exportarr",
-						"sonarr",
-					]
+					command: ["exportarr", "sonarr"]
 					env: [{
 						name:  "PORT"
 						value: "9707"
@@ -86,60 +80,49 @@ k: StatefulSet: sonarr: {
 						server: "sergio.localdomain"
 					}
 				}]
-				terminationGracePeriodSeconds: 0
 			}
 		}
 		volumeClaimTemplates: [{
 			metadata: name: "config"
 			spec: {
 				resources: requests: storage: "5Gi"
-				accessModes: [
-					"ReadWriteOnce",
-				]
+				accessModes: ["ReadWriteOnce"]
 			}
 		}]
 	}
 }
+
 k: Service: sonarr: {
-	metadata: {
-		labels: app: "sonarr"
-	}
-	spec: {
-		selector: app: "sonarr"
-		ports: [{
-			name: "http"
-			port: 8989
-		}, {
-			name: "metrics"
-			port: 9707
-		}]
-	}
+	_selector: "app": "sonarr"
+	spec: ports: [{
+		name: "http"
+		port: 8989
+	}, {
+		name: "metrics"
+		port: 9707
+	}]
 }
+
 k: ServiceMonitor: sonarr: {
-	spec: {
-		endpoints: [{
-			port:     "metrics"
-			interval: "60s"
-		}]
-		selector: matchLabels: app: "sonarr"
-	}
+	_selector: "app": "sonarr"
+	spec: endpoints: [{
+		port:     "metrics"
+		interval: "60s"
+	}]
 }
+
 k: Ingress: sonarr: {
-	metadata: {
-		annotations: {
-			"cert-manager.io/cluster-issuer":     "addem-se-letsencrypt"
-			"ingress.kubernetes.io/ssl-redirect": "true"
-			// ingress.kubernetes.io/auth-tls-error-page: getcert.addem.se
-			"ingress.kubernetes.io/auth-tls-secret":        "client-auth-root-ca-cert"
-			"ingress.kubernetes.io/auth-tls-strict":        "true"
-			"ingress.kubernetes.io/auth-tls-verify-client": "on"
-		}
+	metadata: annotations: {
+		"cert-manager.io/cluster-issuer":     "addem-se-letsencrypt"
+		"ingress.kubernetes.io/ssl-redirect": "true"
+		// ingress.kubernetes.io/auth-tls-error-page: getcert.addem.se
+		"ingress.kubernetes.io/auth-tls-secret":        "client-auth-root-ca-cert"
+		"ingress.kubernetes.io/auth-tls-strict":        "true"
+		"ingress.kubernetes.io/auth-tls-verify-client": "on"
 	}
 	spec: {
 		tls: [{
-			hosts: [
-				"sonarr.addem.se",
-			]
+			hosts: ["sonarr.addem.se"]
 			secretName: "sonarr-cert"
 		}]
 		rules: [{

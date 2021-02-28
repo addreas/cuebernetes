@@ -1,18 +1,15 @@
 package kube
 
 k: HelmRepository: cilium: {
-	metadata: {
-		namespace: "kube-system"
-	}
+	metadata: namespace: "kube-system"
 	spec: {
 		interval: "1h"
 		url:      "https://helm.cilium.io/"
 	}
 }
+
 k: HelmRelease: cilium: {
-	metadata: {
-		namespace: "kube-system"
-	}
+	metadata: namespace: "kube-system"
 	spec: {
 		interval: "1h"
 		chart: spec: {
@@ -54,9 +51,7 @@ k: HelmRelease: cilium: {
 					name:      "cilium-agent"
 					namespace: "kube-system"
 				}
-				spec: targetLabels: [
-					"k8s-app",
-				]
+				spec: targetLabels: ["k8s-app"]
 			}, {
 				apiVersion: "monitoring.coreos.com/v1"
 				kind:       "ServiceMonitor"
@@ -64,9 +59,7 @@ k: HelmRelease: cilium: {
 					name:      "cilium-operator"
 					namespace: "kube-system"
 				}
-				spec: targetLabels: [
-					"io.cilium/app",
-				]
+				spec: targetLabels: ["io.cilium/app"]
 			}]
 		}]
 	}

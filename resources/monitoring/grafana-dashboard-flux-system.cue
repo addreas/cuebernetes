@@ -6,7 +6,6 @@ k: ConfigMap: "grafana-dashboard-flux-system": {
 	metadata: {
 		labels: grafana_dashboard: "flux-system"
 		annotations: "github.com": "fluxcd/flux2/manifests/monitoring/grafana/dashboards"
-		namespace: "monitoring"
 	}
 	data: {
 		"gotk-cluster.json": json656e63.Marshal(_cue_gotk_cluster_json)

@@ -1,13 +1,10 @@
 package kube
 
 k: StatefulSet: bazarr: {
+	_selector: "app": "bazarr"
 	spec: {
-		selector: matchLabels: app: "bazarr"
 		template: {
-			metadata: labels: {
-				app:          "bazarr"
-				"vpn-egress": "client"
-			}
+			metadata: labels: "vpn-egress": "client"
 			spec: {
 				securityContext: fsGroup: 1000
 				containers: [{
@@ -47,7 +44,6 @@ k: StatefulSet: bazarr: {
 						requests: cpu: "10m"
 					}
 				}]
-				terminationGracePeriodSeconds: 0
 				volumes: [{
 					name: "nfs-videos"
 					nfs: {
@@ -61,38 +57,32 @@ k: StatefulSet: bazarr: {
 			metadata: name: "config"
 			spec: {
 				resources: requests: storage: "1Gi"
-				accessModes: [
-					"ReadWriteOnce",
-				]
+				accessModes: ["ReadWriteOnce"]
 			}
 		}]
 	}
 }
+
 k: Service: bazarr: {
-	spec: {
-		selector: app: "bazarr"
-		ports: [{
-			name: "http"
-			port: 6767
-		}]
-	}
+	_selector: "app": "bazarr"
+	spec: ports: [{
+		name: "http"
+		port: 6767
+	}]
 }
+
 k: Ingress: bazarr: {
-	metadata: {
-		annotations: {
-			"cert-manager.io/cluster-issuer":     "addem-se-letsencrypt"
-			"ingress.kubernetes.io/ssl-redirect": "true"
-			// ingress.kubernetes.io/auth-tls-error-page: getcert.addem.se
-			"ingress.kubernetes.io/auth-tls-secret":        "client-auth-root-ca-cert"
-			"ingress.kubernetes.io/auth-tls-strict":        "true"
-			"ingress.kubernetes.io/auth-tls-verify-client": "on"
-		}
+	metadata: annotations: {
+		"cert-manager.io/cluster-issuer":     "addem-se-letsencrypt"
+		"ingress.kubernetes.io/ssl-redirect": "true"
+		// ingress.kubernetes.io/auth-tls-error-page: getcert.addem.se
+		"ingress.kubernetes.io/auth-tls-secret":        "client-auth-root-ca-cert"
+		"ingress.kubernetes.io/auth-tls-strict":        "true"
+		"ingress.kubernetes.io/auth-tls-verify-client": "on"
 	}
 	spec: {
 		tls: [{
-			hosts: [
-				"bazarr.addem.se",
-			]
+			hosts: ["bazarr.addem.se"]
 			secretName: "bazarr-cert"
 		}]
 		rules: [{

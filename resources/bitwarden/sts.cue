@@ -1,13 +1,9 @@
 package kube
 
 k: StatefulSet: bitwarden: {
-	metadata: {
-		labels: app: "bitwarden"
-	}
+	_selector: app: "bitwarden"
 	spec: {
-		selector: matchLabels: app: "bitwarden"
 		template: {
-			metadata: labels: app: "bitwarden"
 			spec: containers: [{
 				image: "bitwardenrs/server"
 				name:  "bitwarden"
@@ -53,11 +49,8 @@ k: StatefulSet: bitwarden: {
 		volumeClaimTemplates: [{
 			metadata: name: "data"
 			spec: {
-				accessModes: [
-					"ReadWriteOnce",
-				]
+				accessModes: ["ReadWriteOnce"]
 				resources: requests: storage: "5Gi"
-				storageClassName: "nfs-csi"
 			}
 		}]
 	}

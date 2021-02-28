@@ -3,13 +3,10 @@ package kube
 import yaml656e63 "encoding/yaml"
 
 k: StatefulSet: qbittorrent: {
+	_selector: "app": "qbittorrent"
 	spec: {
-		selector: matchLabels: app: "qbittorrent"
 		template: {
-			metadata: labels: {
-				app:          "qbittorrent"
-				"vpn-egress": "gateway"
-			}
+			metadata: labels: "vpn-egress": "gateway"
 			spec: {
 				securityContext: {
 					fsGroup: 1000
@@ -21,24 +18,16 @@ k: StatefulSet: qbittorrent: {
 				initContainers: [{
 					name:  "wg-quick"
 					image: "nixery.dev/shell/iproute/wireguard"
-					command: [
-						"sh",
-						"-c",
-					]
-					args: [
-						"""
-		wg-quick up /config/wg0.conf
-		ip route add 10.96.0.0/12 dev eth0
-		ip route add 10.0.0.0/16 dev eth0
-
-		""",
-					]
+					command: ["sh","-c"]
+					args: ["""
+						wg-quick up /config/wg0.conf
+						ip route add 10.96.0.0/12 dev eth0
+						ip route add 10.0.0.0/16 dev eth0
+						"""]
 
 					securityContext: {
 						privileged: true // not sure which cap is required for sysctl
-						capabilities: {
-							add: ["NET_ADMIN", "NET_RAW"]
-						}
+						capabilities: add: ["NET_ADMIN", "NET_RAW"]
 					}
 					volumeMounts: [{
 						name:      "wg0-conf"
@@ -48,25 +37,22 @@ k: StatefulSet: qbittorrent: {
 					name:  "insert-config"
 					image: "quay.io/quay/busybox"
 					command: ["sh", "-c"]
-					args: [
-						"""
-		CONF_DIR=/config/config
-		OLD=\"$CONF_DIR/qBittorrent.conf\"
-		if [ -f $OLD ]; then
-		  echo \"existing config:\"
-		  cat $OLD
-		  NEW=\"$CONF_DIR/qBittorrent.$(date \"+%s\").conf\"
-		  echo \"moving existing config to $NEW\"
-		  cp $OLD $NEW
-		else
-		  mkdir -p $CONF_DIR
-		fi
+					args: ["""
+						CONF_DIR=/config/config
+						OLD=\"$CONF_DIR/qBittorrent.conf\"
+						if [ -f $OLD ]; then
+						echo \"existing config:\"
+						cat $OLD
+						NEW=\"$CONF_DIR/qBittorrent.$(date \"+%s\").conf\"
+						echo \"moving existing config to $NEW\"
+						cp $OLD $NEW
+						else
+						mkdir -p $CONF_DIR
+						fi
 
-		cp /static/qBittorrent.conf $OLD
+						cp /static/qBittorrent.conf $OLD
 
-		""",
-					]
-
+						"""]
 					volumeMounts: [{
 						mountPath: "/static"
 						name:      "static-config"
@@ -174,53 +160,43 @@ k: StatefulSet: qbittorrent: {
 			metadata: name: "config"
 			spec: {
 				resources: requests: storage: "5Gi"
-				accessModes: [
-					"ReadWriteOnce",
-				]
+				accessModes: ["ReadWriteOnce"]
 			}
 		}]
 	}
 }
+
 k: Service: qbittorrent: {
-	metadata: {
-		labels: app: "qbittorrent"
-	}
-	spec: {
-		selector: app: "qbittorrent"
-		ports: [{
-			name: "http"
-			port: 8080
-		}, {
-			name: "metrics"
-			port: 8000
-		}]
-	}
+	_selector: "app": "qbittorrent"
+	spec: ports: [{
+		name: "http"
+		port: 8080
+	}, {
+		name: "metrics"
+		port: 8000
+	}]
 }
+
 k: ServiceMonitor: qbittorrent: {
-	spec: {
-		endpoints: [{
-			port:     "metrics"
-			interval: "60s"
-		}]
-		selector: matchLabels: app: "qbittorrent"
-	}
+	_selector: "app": "qbittorrent"
+	spec: endpoints: [{
+		port:     "metrics"
+		interval: "60s"
+	}]
 }
+
 k: Ingress: qbittorrent: {
-	metadata: {
-		annotations: {
-			"cert-manager.io/cluster-issuer":     "addem-se-letsencrypt"
-			"ingress.kubernetes.io/ssl-redirect": "true"
-			// ingress.kubernetes.io/auth-tls-error-page: getcert.addem.se
-			"ingress.kubernetes.io/auth-tls-secret":        "client-auth-root-ca-cert"
-			"ingress.kubernetes.io/auth-tls-strict":        "true"
-			"ingress.kubernetes.io/auth-tls-verify-client": "on"
-		}
+	metadata: annotations: {
+		"cert-manager.io/cluster-issuer":     "addem-se-letsencrypt"
+		"ingress.kubernetes.io/ssl-redirect": "true"
+		// ingress.kubernetes.io/auth-tls-error-page: getcert.addem.se
+		"ingress.kubernetes.io/auth-tls-secret":        "client-auth-root-ca-cert"
+		"ingress.kubernetes.io/auth-tls-strict":        "true"
+		"ingress.kubernetes.io/auth-tls-verify-client": "on"
 	}
 	spec: {
 		tls: [{
-			hosts: [
-				"qbittorrent.addem.se",
-			]
+			hosts: ["qbittorrent.addem.se"]
 			secretName: "qbittorrent-cert"
 		}]
 		rules: [{
@@ -236,28 +212,27 @@ k: Ingress: qbittorrent: {
 		}]
 	}
 }
+
 k: ConfigMap: "qbittorrent-static-config": {
 	data: {
 		"qBittorrent.conf": yaml656e63.Marshal(_cue_qBittorrent_conf)
 		let _cue_qBittorrent_conf = ["Preferences"]
 	}
 }
+
 k: Service: "vpn-egress": {
-	spec: {
-		selector: "vpn-egress": "gateway"
-		ports: [{
-			name: "socks"
-			port: 1080
-		}]
-	}
+	_selector: "vpn-egress": "gateway"
+	spec: ports: [{
+		name: "socks"
+		port: 1080
+	}]
 }
+
 k: CiliumNetworkPolicy: "vpn-egress-gateway": {
 	spec: {
 		endpointSelector: matchLabels: "vpn-egress": "gateway"
 		ingress: [{
-			fromEntities: [
-				"cluster",
-			]
+			fromEntities: ["cluster"]
 		}]
 		egress: [{
 			toEndpoints: [{
@@ -288,18 +263,15 @@ k: CiliumNetworkPolicy: "vpn-egress-gateway": {
 		}]
 	}
 }
+
 k: CiliumNetworkPolicy: "vpn-egress-clients": {
 	spec: {
 		endpointSelector: matchLabels: "vpn-egress": "client"
 		ingress: [{
-			fromEntities: [
-				"cluster",
-			]
+			fromEntities: ["cluster"]
 		}]
 		egress: [{
-			toEntities: [
-				"cluster",
-			]
+			toEntities: ["cluster"]
 		}, {
 			toEndpoints: [{
 				matchLabels: "vpn-egress": "gateway"
@@ -313,18 +285,5 @@ k: CiliumNetworkPolicy: "vpn-egress-clients": {
 		}]
 	}
 }
-k: SealedSecret: "wg0-conf": {
-	metadata: {
-		namespace: "default"
-	}
-	spec: {
-		encryptedData: "wg0.conf": "AgCQaQONrshfUUPifd4VGEaOHmmRvFF0zCeddmod1I5XwHVb9EcikLtlyobQlNVsfHFgy5m2eCUzRq5fXoanOU7hLxodqMjaX7RZBiDxnTM8/Fknt2JIf97ODoLs7wPm6aeH5iVg/J5kdWHEHhexLuLAla79pospV+0bhF5wqdUy0KyvXltfQtfxbAMbJNKSLeY4ajhhjdH61fac+MZnAqIE2llkDxSUJHqUJagtdhhjq+V8sMW9LmXFb6qMOJdQ769YFZrF35vQWFL5zglldi0pleytfYpE4FR0BhLFGi78O+4BRB0CAz2jSYzH7Z9cG5WZ61hOL01LuzVGGJzLwACOQnF8GlDFcvfzKGL1eQ2kssUR4OFSml3C3MJl5oLUFgy8WhzU/wsjgfaBpBKl2xnxaDc9W9RSK98PZ/8nAgpTuBIAKZRuQ4yBrdyi0mSOMCU+kwFQlJkRsrtbl/zL5L4FXb0AWxziPtxH/4Y3ejajGveZ4BGbggLelW+btWkTYKywhDu0669S58u+wJJyLV0/guUxEdsYExrATkw4nSxERKO12kyoQzny5W/ak7Znv/v0wC2/SHB17R56eeT59sS7tiwPi3y6pPVSpmi1448xGSkrxbg3dqdC6xWTtKw42Or7IVMqlMu0bIwTBXRDaIJEs9FfjokDPCjOOCt8pE63eUHtM01cD6s6CLDVhERsD1oaSVyPbyrpNiOMtKKq6tcmxf2LGfDZWZRY/+Hn1W/lgcShueiPWowC0ayLwqGThFzUglfXitBKinf1vSnL9VuybtTXjgwHKphuOVYJB/J8tsjh0vsaUNIpDKXSLkx7GsPSIoTHkoMimsZxyAstgjbkEwiluzGGOcvuJ1oJRWJ7a6sGoEVNJUECT5E0RhOmeRask6761/Chbnylx5z61lAyvrGjayMxQiUhgC6IyTFiCmdDW2Ht1JwLiIA8tb3G5+sL/VwX6IdF4gFBBn8qM1Q8J7uHWApuLmx2a9/JQ15Tn9s/DuNTlNyzPk3SQLwGiJtjRIjsYr4MjMQVBAG/lPSDsSh/gvno1vQBJqaKAOr+5kJxXgWKufSJufGIZ28en5sRfd6zlRk="
-		template: {
-			metadata: {
-				name:      "wg0-conf"
-				namespace: "default"
-			}
-			type: "Opaque"
-		}
-	}
-}
+
+k: SealedSecret: "wg0-conf": spec: encryptedData: "wg0.conf": "AgCQaQONrshfUUPifd4VGEaOHmmRvFF0zCeddmod1I5XwHVb9EcikLtlyobQlNVsfHFgy5m2eCUzRq5fXoanOU7hLxodqMjaX7RZBiDxnTM8/Fknt2JIf97ODoLs7wPm6aeH5iVg/J5kdWHEHhexLuLAla79pospV+0bhF5wqdUy0KyvXltfQtfxbAMbJNKSLeY4ajhhjdH61fac+MZnAqIE2llkDxSUJHqUJagtdhhjq+V8sMW9LmXFb6qMOJdQ769YFZrF35vQWFL5zglldi0pleytfYpE4FR0BhLFGi78O+4BRB0CAz2jSYzH7Z9cG5WZ61hOL01LuzVGGJzLwACOQnF8GlDFcvfzKGL1eQ2kssUR4OFSml3C3MJl5oLUFgy8WhzU/wsjgfaBpBKl2xnxaDc9W9RSK98PZ/8nAgpTuBIAKZRuQ4yBrdyi0mSOMCU+kwFQlJkRsrtbl/zL5L4FXb0AWxziPtxH/4Y3ejajGveZ4BGbggLelW+btWkTYKywhDu0669S58u+wJJyLV0/guUxEdsYExrATkw4nSxERKO12kyoQzny5W/ak7Znv/v0wC2/SHB17R56eeT59sS7tiwPi3y6pPVSpmi1448xGSkrxbg3dqdC6xWTtKw42Or7IVMqlMu0bIwTBXRDaIJEs9FfjokDPCjOOCt8pE63eUHtM01cD6s6CLDVhERsD1oaSVyPbyrpNiOMtKKq6tcmxf2LGfDZWZRY/+Hn1W/lgcShueiPWowC0ayLwqGThFzUglfXitBKinf1vSnL9VuybtTXjgwHKphuOVYJB/J8tsjh0vsaUNIpDKXSLkx7GsPSIoTHkoMimsZxyAstgjbkEwiluzGGOcvuJ1oJRWJ7a6sGoEVNJUECT5E0RhOmeRask6761/Chbnylx5z61lAyvrGjayMxQiUhgC6IyTFiCmdDW2Ht1JwLiIA8tb3G5+sL/VwX6IdF4gFBBn8qM1Q8J7uHWApuLmx2a9/JQ15Tn9s/DuNTlNyzPk3SQLwGiJtjRIjsYr4MjMQVBAG/lPSDsSh/gvno1vQBJqaKAOr+5kJxXgWKufSJufGIZ28en5sRfd6zlRk="

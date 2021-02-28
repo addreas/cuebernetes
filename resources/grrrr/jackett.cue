@@ -1,13 +1,10 @@
 package kube
 
 k: StatefulSet: jackett: {
+	_selector: "app": "jackett"
 	spec: {
-		selector: matchLabels: app: "jackett"
 		template: {
-			metadata: labels: {
-				app:          "jackett"
-				"vpn-egress": "client"
-			}
+			metadata: labels: "vpn-egress": "client"
 			spec: {
 				securityContext: fsGroup: 1000
 				containers: [{
@@ -44,7 +41,6 @@ k: StatefulSet: jackett: {
 						requests: cpu: "10m"
 					}
 				}]
-				terminationGracePeriodSeconds: 0
 			}
 		}
 		volumeClaimTemplates: [{
@@ -58,6 +54,7 @@ k: StatefulSet: jackett: {
 		}]
 	}
 }
+
 k: Service: jackett: {
 	spec: {
 		selector: app: "jackett"
@@ -67,22 +64,19 @@ k: Service: jackett: {
 		}]
 	}
 }
+
 k: Ingress: jackett: {
-	metadata: {
-		annotations: {
-			"cert-manager.io/cluster-issuer":     "addem-se-letsencrypt"
-			"ingress.kubernetes.io/ssl-redirect": "true"
-			// ingress.kubernetes.io/auth-tls-error-page: getcert.addem.se
-			"ingress.kubernetes.io/auth-tls-secret":        "client-auth-root-ca-cert"
-			"ingress.kubernetes.io/auth-tls-strict":        "true"
-			"ingress.kubernetes.io/auth-tls-verify-client": "on"
-		}
+	metadata: annotations: {
+		"cert-manager.io/cluster-issuer":     "addem-se-letsencrypt"
+		"ingress.kubernetes.io/ssl-redirect": "true"
+		// ingress.kubernetes.io/auth-tls-error-page: getcert.addem.se
+		"ingress.kubernetes.io/auth-tls-secret":        "client-auth-root-ca-cert"
+		"ingress.kubernetes.io/auth-tls-strict":        "true"
+		"ingress.kubernetes.io/auth-tls-verify-client": "on"
 	}
 	spec: {
 		tls: [{
-			hosts: [
-				"jackett.addem.se",
-			]
+			hosts: ["jackett.addem.se"]
 			secretName: "jackett-cert"
 		}]
 		rules: [{

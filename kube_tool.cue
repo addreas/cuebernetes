@@ -37,14 +37,12 @@ command: apply: {
 }
 
 command: seal: {
-	secretName: string                     @tag(secret)
 	scope:      *"strict" | "cluster-wide" @tag(scope)
 	task: stdinSecret: file.Read & {
 		filename: "/dev/stdin"
 		contents: string
 	}
-	let definedSecret = json.Marshal(k.Secret[secretName])
-	let res = "\( *task.stdinSecret.contents | definedSecret )"
+	let res = task.stdinSecret.contents
 	task: print: cli.Print & {
 		text: res
 	}

@@ -1,13 +1,10 @@
 package kube
 
 k: StatefulSet: hass: {
+	_selector: "app": "hass"
 	spec: {
-		selector: matchLabels: app: "hass"
 		template: {
-			metadata: {
-				annotations: "k8s.v1.cni.cncf.io/networks": "macvlan-conf"
-				labels: app:                                "hass"
-			}
+			metadata: annotations: "k8s.v1.cni.cncf.io/networks": "macvlan-conf"
 			spec: containers: [{
 				name:  "hass"
 				image: "ghcr.io/linuxserver/homeassistant:version-2021.2.3"

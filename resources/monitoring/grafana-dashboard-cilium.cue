@@ -3,10 +3,7 @@ package kube
 import json656e63 "encoding/json"
 
 k: ConfigMap: "grafana-cilium-dashboard": {
-	metadata: {
-		labels: grafana_dashboard: "cilium"
-		namespace: "monitoring"
-	}
+	metadata: labels: grafana_dashboard: "cilium"
 	data: {
 		"cilium-dashboard.json": json656e63.Marshal(_cue_cilium_dashboard_json)
 		let _cue_cilium_dashboard_json = {

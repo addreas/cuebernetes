@@ -1,18 +1,15 @@
 package kube
 
 k: HelmRepository: "haproxy-ingress": {
-	metadata: {
-		namespace: "kube-system"
-	}
+	metadata: namespace: "kube-system"
 	spec: {
 		interval: "1h"
 		url:      "https://haproxy-ingress.github.io/charts"
 	}
 }
+
 k: HelmRelease: haproxy: {
-	metadata: {
-		namespace: "kube-system"
-	}
+	metadata: namespace: "kube-system"
 	spec: {
 		interval: "1h"
 		chart: spec: {

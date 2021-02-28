@@ -6,10 +6,7 @@ import (
 )
 
 k: ConfigMap: "grafana-dashboard-unifi-controller": {
-	metadata: {
-		labels: grafana_dashboard: "unifi"
-		namespace: "monitoring"
-	}
+	metadata: labels: grafana_dashboard: "unifi"
 	data: {
 		"unifi-controller.json": json656e63.Marshal(_cue_unifi_controller_json)
 		let _cue_unifi_controller_json = {

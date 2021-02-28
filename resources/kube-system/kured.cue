@@ -1,18 +1,15 @@
 package kube
 
 k: HelmRepository: kured: {
-	metadata: {
-		namespace: "kube-system"
-	}
+	metadata: namespace: "kube-system"
 	spec: {
 		interval: "1h"
 		url:      "https://weaveworks.github.io/kured"
 	}
 }
+
 k: HelmRelease: kured: {
-	metadata: {
-		namespace: "kube-system"
-	}
+	metadata: namespace: "kube-system"
 	spec: {
 		interval: "1h"
 		chart: spec: {

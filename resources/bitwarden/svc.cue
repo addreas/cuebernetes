@@ -1,9 +1,7 @@
 package kube
 
 k: Service: bitwarden: {
-	metadata: {
-		labels: app: "bitwarden"
-	}
+	_selector: "app": "bitwarden"
 	spec: {
 		ports: [{
 			name: "http"
@@ -12,7 +10,5 @@ k: Service: bitwarden: {
 			name: "websocket"
 			port: 3012
 		}]
-		type: "ClusterIP"
-		selector: app: "bitwarden"
 	}
 }

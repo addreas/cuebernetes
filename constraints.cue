@@ -1,6 +1,6 @@
 package kube
 
-context: "default"
+context: *"nucles" | string
 
 k: [string]: [string]: metadata: labels: "cue": "true"
 
@@ -26,4 +26,17 @@ k: Service: [string]: {
 		selector: _selector
 		ports: [...{protocol: *"TCP" | "UDP"}]
 	}
+}
+
+k: ServiceMonitor: [string]: {
+	_selector: _
+	metadata: labels: _selector
+	spec: selector: matchLabels: _selector
+}
+
+
+resources: {
+	apiVersion: "v1"
+	kind: "List"
+	items: [ for resourceType in k for resource in resourceType {resource}]
 }

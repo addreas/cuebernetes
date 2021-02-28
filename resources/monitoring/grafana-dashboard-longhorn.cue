@@ -6,10 +6,7 @@ import (
 )
 
 k: ConfigMap: "grafana-dashboard-longhorn": {
-	metadata: {
-		labels: grafana_dashboard: "longhorn"
-		namespace: "monitoring"
-	}
+	metadata: labels: grafana_dashboard: "longhorn"
 	data: {
 		"longhorn.json": json656e63.Marshal(_cue_longhorn_json)
 		let _cue_longhorn_json = {

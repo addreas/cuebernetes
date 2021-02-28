@@ -1,13 +1,10 @@
 package kube
 
 k: StatefulSet: radarr: {
+	_selector: "app": "radarr"
 	spec: {
-		selector: matchLabels: app: "radarr"
 		template: {
-			metadata: labels: {
-				app:          "radarr"
-				"vpn-egress": "client"
-			}
+			metadata: labels: "vpn-egress": "client"
 			spec: {
 				securityContext: fsGroup: 1000
 				containers: [{
@@ -54,10 +51,7 @@ k: StatefulSet: radarr: {
 					name:            "exportarr"
 					image:           "onedr0p/exportarr:master"
 					imagePullPolicy: "IfNotPresent"
-					command: [
-						"exportarr",
-						"radarr",
-					]
+					command: ["exportarr", "radarr"]
 					env: [{
 						name:  "PORT"
 						value: "9707"
@@ -86,60 +80,49 @@ k: StatefulSet: radarr: {
 						server: "sergio.localdomain"
 					}
 				}]
-				terminationGracePeriodSeconds: 0
 			}
 		}
 		volumeClaimTemplates: [{
 			metadata: name: "config"
 			spec: {
 				resources: requests: storage: "5Gi"
-				accessModes: [
-					"ReadWriteOnce",
-				]
+				accessModes: ["ReadWriteOnce"]
 			}
 		}]
 	}
 }
+
 k: Service: radarr: {
-	metadata: {
-		labels: app: "radarr"
-	}
-	spec: {
-		selector: app: "radarr"
-		ports: [{
-			name: "http"
-			port: 7878
-		}, {
-			name: "metrics"
-			port: 9707
-		}]
-	}
+	_selector: "app": "radarr"
+	spec: ports: [{
+		name: "http"
+		port: 7878
+	}, {
+		name: "metrics"
+		port: 9707
+	}]
 }
+
 k: ServiceMonitor: radarr: {
-	spec: {
-		endpoints: [{
-			port:     "metrics"
-			interval: "60s"
-		}]
-		selector: matchLabels: app: "radarr"
-	}
+	_selector: "app": "radarr"
+	spec: endpoints: [{
+		port:     "metrics"
+		interval: "60s"
+	}]
 }
+
 k: Ingress: radarr: {
-	metadata: {
-		annotations: {
-			"cert-manager.io/cluster-issuer":     "addem-se-letsencrypt"
-			"ingress.kubernetes.io/ssl-redirect": "true"
-			// ingress.kubernetes.io/auth-tls-error-page: getcert.addem.se
-			"ingress.kubernetes.io/auth-tls-secret":        "client-auth-root-ca-cert"
-			"ingress.kubernetes.io/auth-tls-strict":        "true"
-			"ingress.kubernetes.io/auth-tls-verify-client": "on"
-		}
+	metadata: annotations: {
+		"cert-manager.io/cluster-issuer":     "addem-se-letsencrypt"
+		"ingress.kubernetes.io/ssl-redirect": "true"
+		// ingress.kubernetes.io/auth-tls-error-page: getcert.addem.se
+		"ingress.kubernetes.io/auth-tls-secret":        "client-auth-root-ca-cert"
+		"ingress.kubernetes.io/auth-tls-strict":        "true"
+		"ingress.kubernetes.io/auth-tls-verify-client": "on"
 	}
 	spec: {
 		tls: [{
-			hosts: [
-				"radarr.addem.se",
-			]
+			hosts: ["radarr.addem.se"]
 			secretName: "radarr-cert"
 		}]
 		rules: [{

@@ -1,14 +1,9 @@
 package kube
 
-// k: Issuer: "client-auth-selfsigned": {
-//  apiVersion: "cert-manager.io/v1"
-//  kind:       "Issuer"
-//  metadata: name: "client-auth-selfsigned"
-//  spec: selfSigned: {}
-// }
-k: Issuer: "client-auth-root-issuer": {
-	spec: ca: secretName: "client-auth-root-ca-cert"
-}
+k: Issuer: "client-auth-selfsigned": spec: selfSigned: {}
+
+k: Issuer: "client-auth-root-issuer": spec: ca: secretName: "client-auth-root-ca-cert"
+
 k: Certificate: "client-auth-root-ca": {
 	spec: {
 		issuerRef: name: "client-auth-selfsigned"
@@ -21,6 +16,7 @@ k: Certificate: "client-auth-root-ca": {
 		]
 	}
 }
+
 k: Certificate: addem: {
 	spec: {
 		issuerRef: name: "client-auth-root-issuer"
@@ -31,6 +27,7 @@ k: Certificate: addem: {
 		]
 	}
 }
+
 k: Certificate: jonas: {
 	spec: {
 		issuerRef: name: "client-auth-root-issuer"

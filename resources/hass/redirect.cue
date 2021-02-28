@@ -1,14 +1,10 @@
 package kube
 
 k: Ingress: hass: {
-	metadata: {
-		annotations: "cert-manager.io/cluster-issuer": "addem-se-letsencrypt"
-	}
+	metadata: annotations: "cert-manager.io/cluster-issuer": "addem-se-letsencrypt"
 	spec: {
 		tls: [{
-			hosts: [
-				"hass.addem.se",
-			]
+			hosts: ["hass.addem.se",]
 			secretName: "hass-cert"
 		}]
 		rules: [{
@@ -24,6 +20,7 @@ k: Ingress: hass: {
 		}]
 	}
 }
+
 k: Service: hass: {
 	spec: {
 		type:         "ExternalName"
